@@ -107,16 +107,17 @@ class Progress extends Phaser.Scene {
         gameState.cycle++;
 
         this.add.image(gameState.img_x, gameState.img_y, gameState.piece)
-        this.checkWin()
+        this.checkWin();
         if (gameState.gamePlayed === 'Computer') {
             this.selectSquareComputerIntelligent()
-            this.checkWin()
+            this.checkWin();
         }
 
 
     }
 
     checkWin() {
+        gameState.paused = false
         //Row check
         if (gameState.board[0][0] != '' && gameState.board[0][0] === gameState.board[0][1] && gameState.board[0][1] === gameState.board[0][2]) {
             gameState.win = true;
@@ -176,10 +177,19 @@ class Progress extends Phaser.Scene {
             }
         }
         if (gameState.win) {
-            this.scene.stop(this.sceneKey)
-            this.scene.start(this.nextScene[this.sceneKey])
+            //disabling the user's actions when the game has ended
+            gameState.paused = true;
+            //Starting the scene after 1500 ms i.e 2.5s
+            this.time.addEvent({
+                delay: 1500,
+                loop: false,
+                callback: () => {
+                    this.scene.stop(this.sceneKey)
+                    this.scene.start(this.nextScene[this.sceneKey])
+                }
+            }, this)
+            
         }
-
 
     }
 
@@ -425,12 +435,26 @@ class Progress extends Phaser.Scene {
         }
 
         //If no block conditions are met, the game is turned into winning for O
-        gameState.edges = [[0, 1], [1, 0], [1, 2], [2, 1]];
-        gameState.edgeCase = 0;
-        while (gameState.board[gameState.edges[gameState.edgeCase][0]][gameState.edges[gameState.edgeCase][1]] != '') {
-            gameState.edgeCase++;
+        try {
+            gameState.edges = [[0, 1], [1, 0], [1, 2], [2, 1]];
+            gameState.edgeCase = 0;
+            while (gameState.board[gameState.edges[gameState.edgeCase][0]][gameState.edges[gameState.edgeCase][1]] != '') {
+                gameState.edgeCase++;
+            }
+            this.selectSquareComputer(gameState.edges[gameState.edgeCase][0], gameState.edges[gameState.edgeCase][1]);
         }
-        this.selectSquareComputer(gameState.edges[gameState.edgeCase][0], gameState.edges[gameState.edgeCase][1]);
+        //If absolutely no condition is met, the first open spot is chosen by the computer. 
+        catch (error) {
+            console.log(error)
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (gameState.board[i][j] === '') {
+                        return this.selectSquareComputer(i, j)
+                    }
+                }
+            }
+        }
+
     }
 
     createBoard() {
@@ -458,7 +482,7 @@ class TicTacToe extends Progress {
         gameState.board = [['', '', ''], ['', '', ''], ['', '', '']]
         this.input.on('pointerup', function (pointer) {
             gameState.gamePlayed = '2Player';
-            this.selectSquareHuman(pointer);
+            if (!gameState.paused) { this.selectSquareHuman(pointer); }
         }, this)
     }
 }
@@ -473,7 +497,8 @@ class vsComputer extends Progress {
         gameState.board = [['', '', ''], ['', '', ''], ['', '', '']]
         this.input.on('pointerup', function (pointer) {
             gameState.gamePlayed = 'Computer';
-            this.selectSquareHuman(pointer);
+            if (!gameState.paused) { this.selectSquareHuman(pointer); }
+
         }, this)
     }
 }
@@ -537,7 +562,8 @@ const gameState = {
     winText: [],
     computerMoves: [1, 2, 3, 4, 5, 6, 7, 8, 9],
     relations: { 1: [0, 0], 2: [0, 1], 3: [0, 2], 4: [1, 0], 5: [1, 1], 6: [1, 2], 7: [2, 0], 8: [2, 1], 9: [2, 2] },
-    cycle: 0
+    cycle: 0,
+    paused: false
 };
 
 var arr;
