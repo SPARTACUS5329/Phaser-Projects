@@ -15,7 +15,7 @@ class Progress extends Phaser.Scene {
     }
 
     create() {
-
+        
     }
 
     selectSquareHuman(pointer) {
@@ -108,7 +108,7 @@ class Progress extends Phaser.Scene {
 
         this.add.image(gameState.img_x, gameState.img_y, gameState.piece)
         this.checkWin();
-        if (gameState.gamePlayed === 'Computer') {
+        if (gameState.gamePlayed === 'Computer' && !gameState.ended) {
             this.selectSquareComputerIntelligent()
             this.checkWin();
         }
@@ -177,8 +177,19 @@ class Progress extends Phaser.Scene {
             }
         }
         if (gameState.win) {
+            gameState.ended = true;
             //disabling the user's actions when the game has ended
             gameState.paused = true;
+            if (gameState.winPiece === 'X'){
+                gameState.XCountOfWins += 1 ;
+            }
+            else if(gameState.winPiece === 'O'){
+                gameState.OCountOfWins += 1;
+            }
+            else {
+                gameState.XCountOfWins += 0.5;
+                gameState.OCountOfWins += 0.5;
+            }
             //Starting the scene after 1500 ms i.e 2.5s
             this.time.addEvent({
                 delay: 1500,
@@ -476,6 +487,8 @@ class Progress extends Phaser.Scene {
     //This can be reduced to shorter code for attributes that aren't changing or something like that
     //But why bother when it is working after a simple copy paste?? (At the cost of negligible time)
     resetGame() {
+        var XCount = gameState.XCountOfWins;
+        var OCount = gameState.OCountOfWins;
         gameState = {
             turn: 0,
             piece: 'X',
@@ -484,7 +497,10 @@ class Progress extends Phaser.Scene {
             computerMoves: [1, 2, 3, 4, 5, 6, 7, 8, 9],
             relations: { 1: [0, 0], 2: [0, 1], 3: [0, 2], 4: [1, 0], 5: [1, 1], 6: [1, 2], 7: [2, 0], 8: [2, 1], 9: [2, 2] },
             cycle: 0,
-            paused: false
+            paused: false,
+            XCountOfWins: XCount,
+            OCountOfWins: OCount,
+            ended: false
         };
 
         arr = undefined;
@@ -544,6 +560,11 @@ class Intro extends Progress {
             this.scene.stop('Intro');
             this.scene.start('Computer')
         }, this)
+
+        this.add.image(50, 50, 'X');
+        this.add.text(70, 25, `:${gameState.XCountOfWins}`, { font: '50px', fill: '#FFFFFF' })
+        this.add.image(480, 50, 'O');
+        this.add.text(500, 25, `:${gameState.OCountOfWins}`, { font: '50px', fill: '#FFFFFF' })
     }
 }
 
@@ -594,7 +615,10 @@ var gameState = {
     computerMoves: [1, 2, 3, 4, 5, 6, 7, 8, 9],
     relations: { 1: [0, 0], 2: [0, 1], 3: [0, 2], 4: [1, 0], 5: [1, 1], 6: [1, 2], 7: [2, 0], 8: [2, 1], 9: [2, 2] },
     cycle: 0,
-    paused: false
+    paused: false,
+    XCountOfWins: 0,
+    OCountOfWins: 0,
+    ended: false
 };
 
 //global variables that are used in blockWin() by the computer/this code.
