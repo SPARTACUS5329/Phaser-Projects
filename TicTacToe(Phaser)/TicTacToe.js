@@ -3,9 +3,9 @@ class Progress extends Phaser.Scene {
         super({ key })
         this.sceneKey = key;
         this.nextScene = {
-            'Intro': 'TicTacToe',
-            'TicTacToe': 'winScreen',
-            'Computer': 'winScreen'
+            'twoPlayer': 'winScreen',
+            'Computer': 'winScreen',
+            'winScreen': 'Intro'
         }
     }
 
@@ -457,6 +457,7 @@ class Progress extends Phaser.Scene {
 
     }
 
+    //creating the board whenever Intro is over and the next scene starts
     createBoard() {
         gameState.graphics = this.add.graphics();
         gameState.graphics.lineStyle(2, 0x000000, 1);
@@ -470,11 +471,31 @@ class Progress extends Phaser.Scene {
         gameState.graphics.strokeRoundedRect(210, 410, 200, 200, 32)
         gameState.graphics.strokeRoundedRect(410, 410, 200, 200, 32)
     }
+
+    //This is called once the whole game is over i.e after the final merging animation. 
+    //This can be reduced to shorter code for attributes that aren't changing or something like that
+    //But why bother when it is working after a simple copy paste?? (At the cost of negligible time)
+    resetGame() {
+        gameState = {
+            turn: 0,
+            piece: 'X',
+            win: false,
+            winText: [],
+            computerMoves: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            relations: { 1: [0, 0], 2: [0, 1], 3: [0, 2], 4: [1, 0], 5: [1, 1], 6: [1, 2], 7: [2, 0], 8: [2, 1], 9: [2, 2] },
+            cycle: 0,
+            paused: false
+        };
+
+        arr = undefined;
+        Xcoords = undefined;
+        Ocoords = undefined;
+    }
 }
 
-class TicTacToe extends Progress {
+class twoPlayer extends Progress {
     constructor() {
-        super('TicTacToe')
+        super('twoPlayer')
     }
 
     create() {
@@ -514,7 +535,7 @@ class Intro extends Progress {
         gameState.startButton2Player.setInteractive();
         gameState.startButton2Player.on('pointerup', function () {
             this.scene.stop('Intro');
-            this.scene.start(this.nextScene[this.sceneKey])
+            this.scene.start('twoPlayer')
         }, this)
         gameState.startButtonComp = this.add.rectangle(300, 500, 200, 150, 0x000000);
         this.add.text(220, 490, 'COMPUTER', { font: '30px', fill: '#FFFFFF' })
@@ -542,7 +563,7 @@ class winScreen extends Progress {
                 gameState.winText.push(this.add.text(600 * Math.random(), 600 * Math.random(), "IT IS A DRAW", { font: '60px Copperplate', fill: '#000000' }))
             }
         }
-
+        //Final animation
         this.tweens.add({
             targets: gameState.winText,
             x: 70,
@@ -552,10 +573,20 @@ class winScreen extends Progress {
             easeParams: [1.5, 0.5],
             delay: 0
         }, this)
+        
+        this.time.addEvent({
+            delay: 5500,
+            loop: false,
+            callback: () => {
+                this.resetGame()
+                this.scene.stop(this.sceneKey)
+                this.scene.start(this.nextScene[this.sceneKey])
+            }
+        }, this)
     }
 }
 
-const gameState = {
+var gameState = {
     turn: 0,
     piece: 'X',
     win: false,
@@ -566,6 +597,7 @@ const gameState = {
     paused: false
 };
 
+//global variables that are used in blockWin() by the computer/this code.
 var arr;
 var Xcoords;
 var Ocoords;
