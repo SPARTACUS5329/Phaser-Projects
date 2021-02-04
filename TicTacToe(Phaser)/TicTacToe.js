@@ -15,7 +15,7 @@ class Progress extends Phaser.Scene {
     }
 
     create() {
-        
+
     }
 
     selectSquareHuman(pointer) {
@@ -180,10 +180,10 @@ class Progress extends Phaser.Scene {
             gameState.ended = true;
             //disabling the user's actions when the game has ended
             gameState.paused = true;
-            if (gameState.winPiece === 'X'){
-                gameState.XCountOfWins += 1 ;
+            if (gameState.winPiece === 'X') {
+                gameState.XCountOfWins += 1;
             }
-            else if(gameState.winPiece === 'O'){
+            else if (gameState.winPiece === 'O') {
                 gameState.OCountOfWins += 1;
             }
             else {
@@ -199,7 +199,7 @@ class Progress extends Phaser.Scene {
                     this.scene.start(this.nextScene[this.sceneKey])
                 }
             }, this)
-            
+
         }
 
     }
@@ -594,7 +594,7 @@ class winScreen extends Progress {
             easeParams: [1.5, 0.5],
             delay: 0
         }, this)
-        
+
         this.time.addEvent({
             delay: 5500,
             loop: false,

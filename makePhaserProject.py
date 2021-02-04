@@ -32,7 +32,7 @@ with open('game.js','w+') as f:
 const game = new Phaser.Game(config);"""
     f.write(writeString)
 
-with open('mainFile.js','w+') as f:
+with open(f"{dirName}.js",'w+') as f:
     writeString = """class yourGame extends Phaser.Scene {
 
         preload(){
@@ -53,9 +53,10 @@ os.chdir('./')
 if os.name == 'posix':
     os.system('http-server -o -c-1')
 elif os.name == 'nt':
-    os.system('python -m http.server')
+    os.system("start http://localhost:8080/%22")
+    os.system('python -m http.server 8080')
 """
     f.write(writeString)
 
 
-print("\n\nProject called $dirName has been made!!\n\n")
+print(f"\n\nProject called {dirName} has been made!!\n\n")
