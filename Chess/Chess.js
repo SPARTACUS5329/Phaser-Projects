@@ -66,30 +66,34 @@ class Chess extends Phaser.Scene {
                                 gameState.board[i][j].on('pointerdown', (pointer) => {
                                         gameState.previousPieceChosen = gameState.pieceChosen;
                                         gameState.pieceChosen = gameState.tiles[i][j].piecePresent
+                                        //This is the case where the player moves a piece to an unoccupied tile
                                         if (!gameState.pieceChosen && gameState.board[i][j].fillColor === PURPLE) {
-                                                //This is the case where the player moves a piece to an unoccupied tile
                                                 gameState.tiles[i][j].updatePiece(gameState.previousPieceChosen)
-                                                if (gameState.previousPieceChosen.type === 'Pawn' || gameState.previousPieceChosen.type === 'King'){
+                                                if (gameState.previousPieceChosen.type === 'Pawn' || gameState.previousPieceChosen.type === 'King') {
                                                         gameState.previousPieceChosen.alreadyMoved = true;
                                                 }
                                                 this.resetTiles();
+                                                this.changeGameTurn();
                                         }
+                                        //This is the case when a piece has not been chosen and an unoccupied tile is clicked
                                         else if (!gameState.pieceChosen) {
-                                                //This is the case when a piece has not been chosen and an unoccupied tile is clicked
                                                 this.resetTiles()
                                                 return undefined
                                         }
+                                        //This is the case when a piece is captured
                                         else if (gameState.pieceChosen && gameState.board[i][j].fillColor === RED) {
-                                                console.log("Reaching elif statement")
-                                                //Write code here for capturing a piece
-
-
-
-
+                                                gameState.tiles[i][j].updatePiece(gameState.previousPieceChosen)
+                                                this.resetTiles();
+                                                this.changeGameTurn();
                                         }
-                                        else {
-                                                //This is the case where a player selects a piece
-                                                console.log("Else statement")
+                                        //This is the case where a player selects a piece
+                                        else {  
+                                                
+                                                if (gameState.turn !== gameState.pieceChosen.side) {
+                                                        gameState.pieceChosen = gameState.previousPieceChosen;
+                                                        this.resetTiles();
+                                                        return undefined
+                                                }
                                                 gameState.isPieceChosen = true;
                                                 this.resetTiles();
                                                 gameState.pieceChosen.possibleMoves();
@@ -99,6 +103,14 @@ class Chess extends Phaser.Scene {
                                 gameState.tiles[i].push(new Tile(i, j, fill));
 
                         }
+                }
+        }
+
+        changeGameTurn(){
+                if (gameState.turn === 'White'){
+                        gameState.turn = 'Black'
+                } else {
+                        gameState.turn = 'White'
                 }
         }
 
@@ -121,21 +133,30 @@ class Tile {
                 this.piecePresent = piecePresent
                 this.isPiecePresent = isPiecePresent
         }
+
         setPiece(piece) {
                 this.piecePresent = piece
                 this.isPiecePresent = true
         }
 
-        makeChosen() {
+        makeChosen(piece=undefined) {
                 if (!this.piecePresent) {
                         this.changeColor(PURPLE)
-                } else {
+                        return true
+                } 
+                else if(piece && this.piecePresent.side === piece.side){
+                        return false
+                }
+                else {
                         this.changeColor(RED)
+                        return true
                 }
         }
+
         changeColor(color) {
                 gameState.board[this.row][this.col].fillColor = color;
         }
+
         updatePiece(piece) {
                 gameState.tiles[piece.row][piece.col].isPiecePresent = false
                 gameState.tiles[piece.row][piece.col].piecePresent = undefined
@@ -143,6 +164,9 @@ class Tile {
                 piece.col = this.col
                 piece.image.x = piece.row * 90 + 45
                 piece.image.y = piece.col * 90 + 45
+                if (this.isPiecePresent) {
+                        this.piecePresent.image.destroy();
+                }
                 this.isPiecePresent = true
                 this.piecePresent = piece
 
@@ -181,44 +205,44 @@ class Rook extends Piece {
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen();
+                        gameState.tiles[i][j].makeChosen(this);
                         i++;
                 }
                 while (i < 8 && !gameState.tiles[i][j].isPiecePresent)
                 if (i < 8 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
 
                 do {
-                        gameState.tiles[i][j].makeChosen();
+                        gameState.tiles[i][j].makeChosen(this);
                         j++;
                 }
                 while (j < 8 && !gameState.tiles[i][j].isPiecePresent)
                 if (j < 8 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen();
+                        gameState.tiles[i][j].makeChosen(this);
                         j--;
                 }
                 while (j > -1 && !gameState.tiles[i][j].isPiecePresent)
                 if (j > -1 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
 
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen();
+                        gameState.tiles[i][j].makeChosen(this);
                         i--;
                 }
                 while (i > -1 && !gameState.tiles[i][j].isPiecePresent)
                 if (i > -1 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
         }
 }
@@ -231,42 +255,42 @@ class Bishop extends Piece {
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                         i++;
                         j++;
                 } while (i < 8 && j < 8 && !gameState.tiles[i][j].isPiecePresent)
                 if (i < 8 && j < 8 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                         i--;
                         j--;
                 } while (i > -1 && j > -1 && !gameState.tiles[i][j].isPiecePresent)
                 if (i > -1 && j > -1 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                         i++;
                         j--;
                 } while (i < 8 && j > -1 && !gameState.tiles[i][j].isPiecePresent)
                 if (i < 8 && j > -1 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                         i--;
                         j++;
                 } while (i > -1 && j < 8 && !gameState.tiles[i][j].isPiecePresent)
                 if (i > -1 && j < 8 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
         }
 }
@@ -276,7 +300,162 @@ class Knight extends Piece {
                 super(row, col, 'Knight', side, gameObj)
         }
         possibleMoves() {
-
+                if (this.row < 6 && this.row > 1){
+                        if (this.col < 6 && this.col > 1){
+                                gameState.tiles[this.row+1][this.col+2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col -2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 6){
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 1){
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if(this.col === 0){
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                        }
+                        else{
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                }
+                else if (this.row === 6){
+                        if (this.col < 6 && this.col > 1) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 6) {
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 1) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 0) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                        }
+                        else {
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                }
+                else if (this.row === 1){
+                        if (this.col < 6 && this.col > 1) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 6) {
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 1) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 0) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                        }
+                        else {
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                        }
+                }
+                else if (this.row === 0){
+                        if (this.col < 6 && this.col > 1) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 6) {
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 1) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 0) {
+                                gameState.tiles[this.row + 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col + 1].makeChosen(this);
+                        }
+                        else {
+                                gameState.tiles[this.row + 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row + 2][this.col - 1].makeChosen(this);
+                        }
+                }
+                else {
+                        if (this.col < 6 && this.col > 1) {
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 6) {
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 1) {
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                        else if (this.col === 0) {
+                                gameState.tiles[this.row - 1][this.col + 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col + 1].makeChosen(this);
+                        }
+                        else {
+                                gameState.tiles[this.row - 1][this.col - 2].makeChosen(this);
+                                gameState.tiles[this.row - 2][this.col - 1].makeChosen(this);
+                        }
+                }
         }
 }
 
@@ -287,34 +466,47 @@ class Pawn extends Piece {
         }
         possibleMoves() {
                 if (this.side === 'White' && this.alreadyMoved) {
-                        gameState.tiles[this.row][this.col-1].makeChosen()
-                }     
-                else if (this.side === 'White'){
-                        gameState.tiles[this.row][this.col - 1].makeChosen()
-                        gameState.tiles[this.row][this.col - 2].makeChosen()
+                        if (!gameState.tiles[this.row][this.col - 1].isPiecePresent) {
+                                gameState.tiles[this.row][this.col - 1].makeChosen(this)
+                        }
+                }
+                else if (this.side === 'White') {
+
+                        if (!gameState.tiles[this.row][this.col - 1].isPiecePresent) {
+                                gameState.tiles[this.row][this.col - 1].makeChosen(this)
+                        }
+                        if (!gameState.tiles[this.row][this.col - 2].isPiecePresent) {
+                                gameState.tiles[this.row][this.col - 2].makeChosen(this)
+                        }
                 }
                 else if (this.side === 'Black' && this.alreadyMoved) {
-                        gameState.tiles[this.row][this.col + 1].makeChosen()
+                        if (!gameState.tiles[this.row][this.col + 1].isPiecePresent) {
+                                gameState.tiles[this.row][this.col + 1].makeChosen(this)
+                        }
                 }
                 else {
-                        gameState.tiles[this.row][this.col + 1].makeChosen()
-                        gameState.tiles[this.row][this.col + 2].makeChosen()
-                }
-                if (this.side === 'White'){
-                        if (gameState.tiles[this.row - 1][this.col - 1].isPiecePresent && gameState.tiles[this.row - 1][this.col - 1].piecePresent.side === 'Black'){
-                                gameState.tiles[this.row - 1][this.col - 1].makeChosen()
+                        if (!gameState.tiles[this.row][this.col + 1].isPiecePresent) {
+                                gameState.tiles[this.row][this.col + 1].makeChosen(this)
                         }
-                        if (gameState.tiles[this.row + 1][this.col - 1].isPiecePresent && gameState.tiles[this.row + 1][this.col - 1].piecePresent.side === 'Black'){
-                                gameState.tiles[this.row + 1][this.col - 1].makeChosen()
+                        if (!gameState.tiles[this.row][this.col + 2].isPiecePresent) {
+                                gameState.tiles[this.row][this.col + 2].makeChosen(this)
+                        }
+                }
+                if (this.side === 'White') {
+                        if (gameState.tiles[this.row - 1][this.col - 1].isPiecePresent && gameState.tiles[this.row - 1][this.col - 1].piecePresent.side === 'Black') {
+                                gameState.tiles[this.row - 1][this.col - 1].makeChosen(this)
+                        }
+                        if (gameState.tiles[this.row + 1][this.col - 1].isPiecePresent && gameState.tiles[this.row + 1][this.col - 1].piecePresent.side === 'Black') {
+                                gameState.tiles[this.row + 1][this.col - 1].makeChosen(this)
                         }
                 }
                 else {
                         if (gameState.tiles[this.row + 1][this.col + 1].isPiecePresent && gameState.tiles[this.row + 1][this.col + 1].piecePresent.side === 'White') {
-                                gameState.tiles[this.row + 1][this.col + 1].makeChosen()
+                                gameState.tiles[this.row + 1][this.col + 1].makeChosen(this)
                         }
-                        if (gameState.tiles[this.row - 1][this.col + 1].isPiecePresent && gameState.tiles[this.row - 1][this.col - 1].piecePresent.side === 'White') {
-                                gameState.tiles[this.row - 1][this.col + 1].makeChosen()
-                        }  
+                        if (gameState.tiles[this.row - 1][this.col + 1].isPiecePresent && gameState.tiles[this.row - 1][this.col + 1].piecePresent.side === 'White') {
+                                gameState.tiles[this.row - 1][this.col + 1].makeChosen(this)
+                        }
                 }
         }
 }
@@ -328,84 +520,84 @@ class Queen extends Piece {
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                         i++;
                         j++;
                 } while (i < 8 && j < 8 && !gameState.tiles[i][j].isPiecePresent)
                 if (i < 8 && j < 8 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                         i--;
                         j--;
                 } while (i > -1 && j > -1 && !gameState.tiles[i][j].isPiecePresent)
                 if (i > -1 && j > -1 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                         i++;
                         j--;
                 } while (i < 8 && j > -1 && !gameState.tiles[i][j].isPiecePresent)
                 if (i < 8 && j > -1 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                         i--;
                         j++;
                 } while (i > -1 && j < 8 && !gameState.tiles[i][j].isPiecePresent)
                 if (i > -1 && j < 8 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 //Rook Moves
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen();
+                        gameState.tiles[i][j].makeChosen(this);
                         i++;
                 }
                 while (i < 8 && !gameState.tiles[i][j].isPiecePresent)
                 if (i < 8 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
 
                 do {
-                        gameState.tiles[i][j].makeChosen();
+                        gameState.tiles[i][j].makeChosen(this);
                         j++;
                 }
                 while (j < 8 && !gameState.tiles[i][j].isPiecePresent)
                 if (j < 8 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen();
+                        gameState.tiles[i][j].makeChosen(this);
                         j--;
                 }
                 while (j > -1 && !gameState.tiles[i][j].isPiecePresent)
                 if (j > -1 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
                 i = this.row
                 j = this.col
                 do {
-                        gameState.tiles[i][j].makeChosen();
+                        gameState.tiles[i][j].makeChosen(this);
                         i--;
                 }
                 while (i > -1 && !gameState.tiles[i][j].isPiecePresent)
                 if (i > -1 && gameState.tiles[i][j].isPiecePresent && !(this.side === gameState.tiles[i][j].piecePresent.side)) {
-                        gameState.tiles[i][j].makeChosen()
+                        gameState.tiles[i][j].makeChosen(this)
                 }
         }
 
@@ -414,9 +606,70 @@ class Queen extends Piece {
 class King extends Piece {
         constructor(row, col, side, gameObj) {
                 super(row, col, 'King', side, gameObj)
+                this.alreadyMoved = false;
         }
         possibleMoves() {
+                if (this.col !== 7 && this.col !== 0) {
+                        if (this.row !== 0 && this.row != 7) {
+                                gameState.tiles[this.row + 1][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row - 1][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row - 1][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row + 1][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row + 1][this.col].makeChosen(this)
+                                gameState.tiles[this.row - 1][this.col].makeChosen(this)
 
+                        }
+                        else if (this.row === 0) {
+                                gameState.tiles[this.row + 1][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row + 1][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col - 1].makeChosen(this)
+                        }
+                        else if (this.row === 7) {
+                                gameState.tiles[this.row - 1][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row - 1][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col - 1].makeChosen(this)
+                        }
+                }
+                else if(this.col === 0){
+                        if (this.row !== 0 && this.row != 7) {
+                                gameState.tiles[this.row + 1][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row - 1][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row + 1][this.col].makeChosen(this)
+                                gameState.tiles[this.row - 1][this.col].makeChosen(this)
+
+                        }
+                        else if (this.row === 0) {
+                                gameState.tiles[this.row + 1][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col + 1].makeChosen(this)
+                        }
+                        else if (this.row === 7) {
+                                gameState.tiles[this.row - 1][this.col + 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col + 1].makeChosen(this)
+                        }
+                }
+                else if(this.col === 7){
+                        if (this.row !== 0 && this.row != 7) {
+                                gameState.tiles[this.row - 1][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row + 1][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row + 1][this.col].makeChosen(this)
+                                gameState.tiles[this.row - 1][this.col].makeChosen(this)
+
+                        }
+                        else if (this.row === 0) {
+                                gameState.tiles[this.row + 1][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col - 1].makeChosen(this)
+                        }
+                        else if (this.row === 7) {
+                                gameState.tiles[this.row - 1][this.col - 1].makeChosen(this)
+                                gameState.tiles[this.row][this.col - 1].makeChosen(this)
+                        }
+                }
         }
 }
 
@@ -425,7 +678,8 @@ const gameState = {
         isPieceChosen: false,
         tiles: [],
         PieceChosen: undefined,
-        pieces: []
+        pieces: [],
+        turn: 'White'
 }
 
 var fill;
