@@ -15,12 +15,6 @@ class PiCalculator extends Phaser.Scene {
       .setScale(0.5);
     gameState.wall = this.physics.add.sprite(50, 500, "wall");
 
-    // gameState.leftBlock.setBounce(0.5);
-    // gameState.rightBlock.setBounce(0.5);
-
-    // gameState.leftBlock.setMass(1);
-    // gameState.rightBlock.setMass(100);
-    // gameState.wall.body.setImmovable(true);
 
     gameState.rightBlock.body.customSeparateX = true;
     gameState.leftBlock.body.customSeparateX = true;
@@ -31,12 +25,7 @@ class PiCalculator extends Phaser.Scene {
     gameState.rightBlock.setCollideWorldBounds(true);
     gameState.wall.setCollideWorldBounds(true);
 
-    // this.physics.add.collider(gameState.leftBlock,gameState.rightBlock,()=>{
-    //   gameState.collisions += 1;
-    // });
-    // this.physics.add.collider(gameState.leftBlock, gameState.wall,()=>{
-    //   gameState.collisions += 1;
-    // });
+
     this.physics.add.collider(
       gameState.leftBlock,
       gameState.rightBlock,
@@ -67,7 +56,6 @@ class PiCalculator extends Phaser.Scene {
       }
     );
 
-    //gameState.leftBlock.setVelocityX(50);
     gameState.rightBlock.setVelocityX(-50);
   }
   update() {}
