@@ -1,4 +1,12 @@
 class Chess extends Phaser.Scene {
+        constructor(key){
+                super({key})
+                this.sceneKey = key
+                this.nextScene = {
+                        'Chess' : 'winScreen',
+                        'winScreen': 'Chess'
+                }
+        }
         preload() {
                 this.load.image('BlackKnight', './Assets/BlackKnight.png')
                 this.load.image('BlackRook', './Assets/BlackRook.png')
@@ -13,10 +21,7 @@ class Chess extends Phaser.Scene {
                 this.load.image('WhiteKing', './Assets/WhiteKing.png')
                 this.load.image('WhitePawn', './Assets/WhitePawn.png')
         }
-        create() {
-                this.createBoard();
-                this.initialiseGame();
-        }
+        
         update() {
 
         }
@@ -82,6 +87,11 @@ class Chess extends Phaser.Scene {
                                         }
                                         //This is the case when a piece is captured
                                         else if (gameState.pieceChosen && gameState.board[i][j].fillColor === RED) {
+                                                if (gameState.pieceChosen.type === 'King'){
+                                                        this.scene.stop(this.sceneKey)
+                                                        this.scene.start(this.nextScene[this.sceneKey])
+                                                        return undefined
+                                                }
                                                 gameState.tiles[i][j].updatePiece(gameState.previousPieceChosen)
                                                 this.resetTiles();
                                                 this.changeGameTurn();
@@ -122,8 +132,6 @@ class Chess extends Phaser.Scene {
                 }
         }
 }
-
-
 
 class Tile {
         constructor(row, col, originalColor, piecePresent = undefined, isPiecePresent = false) {
@@ -673,6 +681,25 @@ class King extends Piece {
         }
 }
 
+class GameScene extends Chess{
+        constructor(){
+                super('Chess')
+        }
+        create() {
+                this.createBoard();
+                this.initialiseGame();
+        }
+}
+
+class winScreen extends Chess{
+        constructor(){
+                super('winScreen')
+        }
+        create(){
+                this.add.text(100, 100, `${gameState.turn} is the winner!!`, { font: '60px Copperplate', fill: '#000000' })
+        }
+}
+
 const gameState = {
         board: [],
         isPieceChosen: false,
@@ -681,6 +708,7 @@ const gameState = {
         pieces: [],
         turn: 'White'
 }
+
 
 var fill;
 var rect;
