@@ -6,25 +6,35 @@ class PiCalculator extends Phaser.Scene {
 
   create() {
     gameState.mu = gameState.rightMass / gameState.leftMass;
+
+    this.add.text(100, 70, `mass ratio = ${gameState.mu}`, {
+      font: "30px",
+      fill: "#FFFFFF",
+    });
     gameState.leftBlock = this.physics.add
-      .sprite(200, 574, "block")
-      .setScale(0.3);
+      .sprite(200, 604, "block")
+      .setScale(0.1);
 
     gameState.rightBlock = this.physics.add
-      .sprite(600, 544, "block")
-      .setScale(0.5);
-    gameState.wall = this.physics.add.sprite(50, 500, "wall");
+      .sprite(400, 604, "block")
+      .setScale(0.1);
 
+    gameState.wall = this.physics.add.sprite(20, 500, "wall");
 
     gameState.rightBlock.body.customSeparateX = true;
     gameState.leftBlock.body.customSeparateX = true;
     gameState.wall.body.customSeparateX = true;
 
-    this.physics.world.setBounds(0, 0, Infinity, gameState.height);
+    this.physics.world.setBounds(0, 0, 1000, gameState.height);
     gameState.leftBlock.setCollideWorldBounds(true);
     gameState.rightBlock.setCollideWorldBounds(true);
     gameState.wall.setCollideWorldBounds(true);
 
+    gameState.startButton = this.add.rectangle(500, 100, 100, 100, 0x000000);
+    gameState.startButton.setInteractive();
+    gameState.startButton.on("pointerup", () => {
+      this.startCalculation();
+    });
 
     this.physics.add.collider(
       gameState.leftBlock,
@@ -55,18 +65,35 @@ class PiCalculator extends Phaser.Scene {
         gameState.wall.setVelocityX(0);
       }
     );
+  }
 
+  startCalculation() {
     gameState.rightBlock.setVelocityX(-50);
   }
-  update() {}
+  update() {
+    if (
+      !gameState.calculationOver &&
+      gameState.rightBlock.body.velocity.x > 0 &&
+      gameState.leftBlock.body.velocity.x >= 0 &&
+      gameState.rightBlock.body.velocity.x > gameState.leftBlock.body.velocity.x
+    ) {
+      this.add.text(400, 150, `${gameState.collisions} collisions`, {
+        font: "30px",
+        fill: "#FFFFFF",
+      });
+      gameState.calculationOver = true;
+    }
+
+  }
 }
 
 const gameState = {
-  width: 620,
+  width: 1000,
   height: 620,
   leftMass: 1,
   rightMass: 100,
   collisions: 0,
+  calculationOver: false,
 };
 
 var uL;
