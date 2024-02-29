@@ -13,11 +13,11 @@ class PiCalculator extends Phaser.Scene {
     });
     gameState.leftBlock = this.physics.add
       .sprite(200, 604, "block")
-      .setScale(0.1);
+      .setScale(0.01);
 
     gameState.rightBlock = this.physics.add
-      .sprite(400, 604, "block")
-      .setScale(0.1);
+      .sprite(210, 604, "block")
+      .setScale(0.01);
 
     gameState.wall = this.physics.add.sprite(20, 500, "wall");
 
@@ -68,14 +68,13 @@ class PiCalculator extends Phaser.Scene {
   }
 
   startCalculation() {
-    gameState.rightBlock.setVelocityX(-50);
+    gameState.rightBlock.setVelocityX(-5);
   }
   update() {
     if (
       !gameState.calculationOver &&
       gameState.rightBlock.body.velocity.x > 0 &&
-      gameState.leftBlock.body.velocity.x >= 0 &&
-      gameState.rightBlock.body.velocity.x > gameState.leftBlock.body.velocity.x
+      gameState.rightBlock.body.velocity.x >= Math.abs(gameState.leftBlock.body.velocity.x)
     ) {
       this.add.text(400, 150, `${gameState.collisions} collisions`, {
         font: "30px",
@@ -91,7 +90,7 @@ const gameState = {
   width: 1000,
   height: 620,
   leftMass: 1,
-  rightMass: 100,
+  rightMass: 10000,
   collisions: 0,
   calculationOver: false,
 };
